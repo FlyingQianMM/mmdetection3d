@@ -6,6 +6,7 @@ from mmdet3d.core.points import BasePoints, get_points_type
 from mmdet.datasets.builder import PIPELINES
 from mmdet.datasets.pipelines import LoadAnnotations, LoadImageFromFile
 
+from .transforms_3d import dump_results
 
 @PIPELINES.register_module()
 class LoadMultiViewImageFromFiles(object):
@@ -208,11 +209,12 @@ class LoadPointsFromMultiSweeps(object):
             elif self.test_mode:
                 choices = np.arange(self.sweeps_num)
             else:
+                np.random.seed(123)
                 choices = np.random.choice(
                     len(results['sweeps']), self.sweeps_num, replace=False)
             for idx in choices:
                 sweep = results['sweeps'][idx]
-                points_sweep = self._load_points(sweep['data_path'])
+                points_sweep = self._load_points(sweep['data_path'].replace('/home/', './'))
                 points_sweep = np.copy(points_sweep).reshape(-1, self.load_dim)
                 if self.remove_close:
                     points_sweep = self._remove_close(points_sweep)
@@ -227,6 +229,7 @@ class LoadPointsFromMultiSweeps(object):
         points = points.cat(sweep_points_list)
         points = points[:, self.use_dim]
         results['points'] = points
+        dump_results(results, 'LoadPointsFromMultiSweeps.pkl')
         return results
 
     def __repr__(self):
@@ -411,6 +414,7 @@ class LoadPointsFromFile(object):
                 - points (:obj:`BasePoints`): Point clouds data.
         """
         pts_filename = results['pts_filename']
+        pts_filename = pts_filename.replace('/home/', './')
         points = self._load_points(pts_filename)
         points = points.reshape(-1, self.load_dim)
         points = points[:, self.use_dim]
@@ -439,7 +443,7 @@ class LoadPointsFromFile(object):
         points = points_class(
             points, points_dim=points.shape[-1], attribute_dims=attribute_dims)
         results['points'] = points
-
+        dump_results(results, 'LoadPointsFromFile.pkl')
         return results
 
     def __repr__(self):
@@ -648,7 +652,7 @@ class LoadAnnotations3D(LoadAnnotations):
             results = self._load_masks_3d(results)
         if self.with_seg_3d:
             results = self._load_semantic_seg_3d(results)
-
+        dump_results(results, 'LoadAnnotations3D.pkl')
         return results
 
     def __repr__(self):

@@ -560,6 +560,7 @@ class CenterHead(BaseModule):
                         vx.unsqueeze(0),
                         vy.unsqueeze(0)
                     ])
+                    
 
             heatmaps.append(heatmap)
             anno_boxes.append(anno_box)

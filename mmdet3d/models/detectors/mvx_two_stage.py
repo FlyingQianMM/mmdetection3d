@@ -270,6 +270,17 @@ class MVXTwoStageDetector(Base3DDetector):
         Returns:
             dict: Losses of different branches.
         """
+        inputs = {
+            'points': points,
+            'img_metas': img_metas,
+            'gt_labels_3d': gt_labels_3d,
+            'gt_bboxes_3d': gt_bboxes_3d
+        }
+
+        from mmdet3d.datasets.pipelines.transforms_3d import dump_results
+        dump_results(inputs, 'inputs.pkl')  
+
+
         img_feats, pts_feats = self.extract_feat(
             points, img=img, img_metas=img_metas)
         losses = dict()

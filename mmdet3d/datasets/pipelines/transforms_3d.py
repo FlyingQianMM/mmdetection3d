@@ -12,6 +12,13 @@ from mmdet.datasets.pipelines import RandomFlip
 from ..builder import OBJECTSAMPLERS
 from .data_augment_utils import noise_per_object_v3_
 
+def dump_results(input_dict, file_path):
+    import pickle
+    import os
+    if not os.path.isfile(file_path):
+        with open(file_path, 'wb') as f:
+            pickle.dump(input_dict, f)
+
 
 @PIPELINES.register_module()
 class RandomDropPointsColor(object):
@@ -156,10 +163,12 @@ class RandomFlip3D(RandomFlip):
             input_dict['pcd_vertical_flip'] = False
         else:
             if 'pcd_horizontal_flip' not in input_dict:
+                np.random.seed(123)
                 flip_horizontal = True if np.random.rand(
                 ) < self.flip_ratio else False
                 input_dict['pcd_horizontal_flip'] = flip_horizontal
             if 'pcd_vertical_flip' not in input_dict:
+                np.random.seed(123)
                 flip_vertical = True if np.random.rand(
                 ) < self.flip_ratio_bev_vertical else False
                 input_dict['pcd_vertical_flip'] = flip_vertical
@@ -173,6 +182,7 @@ class RandomFlip3D(RandomFlip):
         if input_dict['pcd_vertical_flip']:
             self.random_flip_data_3d(input_dict, 'vertical')
             input_dict['transformation_3d_flow'].extend(['VF'])
+        dump_results(input_dict, 'RandomFlip3D.pkl')
         return input_dict
 
     def __repr__(self):
@@ -340,6 +350,7 @@ class ObjectSample(object):
         input_dict['gt_labels_3d'] = gt_labels_3d.astype(np.long)
         input_dict['points'] = points
 
+        dump_results(input_dict, 'PasteObjectFromDatabase.pkl')
         return input_dict
 
     def __repr__(self):
@@ -564,6 +575,7 @@ class GlobalRotScaleTrans(object):
                 in the result dict.
         """
         translation_std = np.array(self.translation_std, dtype=np.float32)
+        np.random.seed(123)
         trans_factor = np.random.normal(scale=translation_std, size=3).T
 
         input_dict['points'].translate(trans_factor)
@@ -583,6 +595,7 @@ class GlobalRotScaleTrans(object):
                 in the result dict.
         """
         rotation = self.rot_range
+        np.random.seed(123)
         noise_rotation = np.random.uniform(rotation[0], rotation[1])
 
         # if no bbox in input_dict, only rotate points
@@ -631,6 +644,7 @@ class GlobalRotScaleTrans(object):
             dict: Results after scaling, 'pcd_scale_factor' are updated \
                 in the result dict.
         """
+        np.random.seed(123)
         scale_factor = np.random.uniform(self.scale_ratio_range[0],
                                          self.scale_ratio_range[1])
         input_dict['pcd_scale_factor'] = scale_factor
@@ -659,6 +673,8 @@ class GlobalRotScaleTrans(object):
         self._trans_bbox_points(input_dict)
 
         input_dict['transformation_3d_flow'].extend(['R', 'S', 'T'])
+
+        dump_results(input_dict, 'GlobalRotScaleTrans.pkl')
         return input_dict
 
     def __repr__(self):
@@ -697,6 +713,7 @@ class PointShuffle(object):
         if pts_semantic_mask is not None:
             input_dict['pts_semantic_mask'] = pts_semantic_mask[idx]
 
+        dump_results(input_dict, 'PointShuffle.pkl')
         return input_dict
 
     def __repr__(self):
@@ -745,7 +762,7 @@ class ObjectRangeFilter(object):
         gt_bboxes_3d.limit_yaw(offset=0.5, period=2 * np.pi)
         input_dict['gt_bboxes_3d'] = gt_bboxes_3d
         input_dict['gt_labels_3d'] = gt_labels_3d
-
+        dump_results(input_dict, 'ObjectRangeFilter.pkl')
         return input_dict
 
     def __repr__(self):
@@ -791,6 +808,7 @@ class PointsRangeFilter(object):
         if pts_semantic_mask is not None:
             input_dict['pts_semantic_mask'] = pts_semantic_mask[points_mask]
 
+        dump_results(input_dict, 'PointsRangeFilter.pkl')
         return input_dict
 
     def __repr__(self):
@@ -827,7 +845,7 @@ class ObjectNameFilter(object):
                                   dtype=np.bool_)
         input_dict['gt_bboxes_3d'] = input_dict['gt_bboxes_3d'][gt_bboxes_mask]
         input_dict['gt_labels_3d'] = input_dict['gt_labels_3d'][gt_bboxes_mask]
-
+        dump_results(input_dict, 'ObjectNameFilter.pkl')
         return input_dict
 
     def __repr__(self):

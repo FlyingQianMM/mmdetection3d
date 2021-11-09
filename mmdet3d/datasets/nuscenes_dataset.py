@@ -185,6 +185,10 @@ class NuScenesDataset(Custom3DDataset):
         data = mmcv.load(ann_file)
         data_infos = list(sorted(data['infos'], key=lambda e: e['timestamp']))
         data_infos = data_infos[::self.load_interval]
+        #data_infos = [data_infos[4], data_infos[1]]
+        #data_infos = [data_infos[1136], data_infos[2164], data_infos[5150], data_infos[5641]]
+        data_infos = [data_infos[5641]]
+        #data_infos = [data_infos[4]]
         self.metadata = data['metadata']
         self.version = self.metadata['version']
         return data_infos

@@ -163,6 +163,8 @@ class Collect3D(object):
         data['img_metas'] = DC(img_metas, cpu_only=True)
         for key in self.keys:
             data[key] = results[key]
+        from .transforms_3d import dump_results
+        dump_results(data, 'Collect3D.pkl')
         return data
 
     def __repr__(self):

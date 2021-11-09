@@ -133,7 +133,11 @@ class BasePoints(object):
         Returns:
             torch.Tensor: The shuffled index.
         """
-        idx = torch.randperm(self.__len__(), device=self.tensor.device)
+        import numpy as np
+        np.random.seed(123)
+        idx = np.random.permutation(self.__len__())
+        idx = torch.LongTensor(idx, device=self.tensor.device)
+        #idx = torch.randperm(self.__len__(), device=self.tensor.device)
         self.tensor = self.tensor[idx]
         return idx
 

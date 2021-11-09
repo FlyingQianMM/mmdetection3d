@@ -103,7 +103,8 @@ class DataBaseSampler(object):
                      type='LoadPointsFromFile',
                      coord_type='LIDAR',
                      load_dim=4,
-                     use_dim=[0, 1, 2, 3])):
+                     use_dim=[0, 1, 2, 3]),
+                 shuffle=True):
         super().__init__()
         self.data_root = data_root
         self.info_path = info_path
@@ -144,7 +145,7 @@ class DataBaseSampler(object):
 
         self.sampler_dict = {}
         for k, v in self.group_db_infos.items():
-            self.sampler_dict[k] = BatchSampler(v, k, shuffle=True)
+            self.sampler_dict[k] = BatchSampler(v, k, shuffle=shuffle)
         # TODO: No group_sampling currently
 
     @staticmethod
